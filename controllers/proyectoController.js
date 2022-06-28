@@ -1,5 +1,6 @@
 import Proyecto from "../models/Proyectos.js";
 import Tarea from "../models/Tarea.js";
+import Usuario from "../models/Usuario.js";
 
 const obtenerProyectos = async (req, res) => {
   const proyectos = await Proyecto.find()
@@ -91,7 +92,60 @@ const eliminarProyecto = async (req, res) => {
   }
 };
 
-const agregarColaborador = async (req, res) => {};
+const buscarColaborador = async (req, res) => {
+  const { email } = req.body;
+  const usuario = await Usuario.findOne({ email }).select(
+    "-confirmado -createdAt -updatedAt -password -token -__v"
+  );
+
+  if (!usuario) {
+    const error = new Error("Usuario no encontrado");
+    return res.status(404).json({ msg: error.message });
+  }
+
+  res.json(usuario);
+};
+
+const agregarColaborador = async (req, res) => {
+  const proyecto = await Proyecto.findById(req.params.id);
+
+  if (!proyecto) {
+    const error = new Error("Proyecto no encontrado");
+    return res.status(404).json({ msg: error.message });
+  }
+
+  if (proyecto.creador.toString() !== req.usuario._id.toString()) {
+    const error = new Error("Accion no valida");
+    return res.status(401).json({ msg: error.message });
+  }
+
+  const { email } = req.body;
+  const usuario = await Usuario.findOne({ email }).select(
+    "-confirmado -createdAt -updatedAt -password -token -__v"
+  );
+
+  if (!usuario) {
+    const error = new Error("Usuario no encontrado");
+    return res.status(404).json({ msg: error.message });
+  }
+
+  //El colaborador no es el admin
+  if (proyecto.creador.toString() === usuario._id.toString()) {
+    const error = new Error("No puedes agregarte a ti mismo");
+    return res.status(404).json({ msg: error.message });
+  }
+
+  //Revisar que no este agregado al proyecto
+  if (proyecto.colaboradores.includes(usuario._id)) {
+    const error = new Error("El usuario ya esta agregado");
+    return res.status(404).json({ msg: error.message });
+  }
+
+  //Agregar al proyecto
+  proyecto.colaboradores.push(usuario._id);
+  await proyecto.save();
+  res.json({ msg: "Colaborador Agregado Correctamente" });
+};
 
 const eliminarColaborador = async (req, res) => {};
 
@@ -103,4 +157,5 @@ export {
   eliminarProyecto,
   agregarColaborador,
   eliminarColaborador,
+  buscarColaborador,
 };
