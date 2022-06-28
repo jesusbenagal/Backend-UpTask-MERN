@@ -1,5 +1,6 @@
 import Proyecto from "../models/Proyectos.js";
 import Tarea from "../models/Tarea.js";
+import Usuario from "../models/Usuario.js";
 
 const obtenerProyectos = async (req, res) => {
   const proyectos = await Proyecto.find()
@@ -91,6 +92,20 @@ const eliminarProyecto = async (req, res) => {
   }
 };
 
+const buscarColaborador = async (req, res) => {
+  const { email } = req.body;
+  const usuario = await Usuario.findOne({ email }).select(
+    "-confirmado -createdAt -updatedAt -password -token -__v"
+  );
+
+  if (!usuario) {
+    const error = new Error("Usuario no encontrado");
+    return res.status(404).json({ msg: error.message });
+  }
+
+  res.json(usuario);
+};
+
 const agregarColaborador = async (req, res) => {};
 
 const eliminarColaborador = async (req, res) => {};
@@ -103,4 +118,5 @@ export {
   eliminarProyecto,
   agregarColaborador,
   eliminarColaborador,
+  buscarColaborador,
 };
