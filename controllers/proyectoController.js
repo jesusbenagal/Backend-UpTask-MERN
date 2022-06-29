@@ -3,10 +3,12 @@ import Tarea from "../models/Tarea.js";
 import Usuario from "../models/Usuario.js";
 
 const obtenerProyectos = async (req, res) => {
-  const proyectos = await Proyecto.find()
-    .where("creador")
-    .equals(req.usuario)
-    .select("-tareas");
+  const proyectos = await Proyecto.find({
+    $or: [
+      { colaboradores: { $in: req.usuario } },
+      { creador: { $in: req.usuario } },
+    ],
+  }).select("-tareas");
 
   res.json(proyectos);
 };
