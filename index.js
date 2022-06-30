@@ -52,17 +52,23 @@ const io = new Server(servidor, {
   },
 });
 
-// TEST SOCKET IO
-// io.on("connection", (socket) => {
-//   console.log("Conectado a socket.io");
+io.on("connection", (socket) => {
+  // console.log("Conectado a socket.io");
+  //   Definir eventos de Socket.IO
+  //   Recibir elemento desde el Front
+  //   socket.on("prueba", (proyectos) => {
+  //     console.log("Prueba desde Socket IO", proyectos);
+  //   });
+  //   Enviar elemento al Front desde el backend
+  //   socket.emit("respuesta", {
+  //     nombre: "Jesus",
+  //   });
+  socket.on("abrir-proyecto", (proyectoId) => {
+    socket.join(proyectoId);
+  });
 
-//   Definir eventos de Socket.IO
-//   Recibir elemento desde el Front
-//   socket.on("prueba", (proyectos) => {
-//     console.log("Prueba desde Socket IO", proyectos);
-//   });
-//   Enviar elemento al Front desde el backend
-//   socket.emit("respuesta", {
-//     nombre: "Jesus",
-//   });
-// });
+  socket.on("nueva tarea", (tarea) => {
+    const proyecto = tarea.proyecto;
+    socket.to(proyecto).emit("tarea agregada", tarea);
+  });
+});
