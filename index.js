@@ -51,3 +51,9 @@ const io = new Server(servidor, {
     origin: process.env.FRONTEND_URL,
   },
 });
+
+io.on("connection", (socket) => {
+  console.log("Conectado a socket.io");
+
+  //Definir eventos de Socket.IO
+});
